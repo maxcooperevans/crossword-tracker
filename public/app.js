@@ -7,6 +7,7 @@ let config = { thresholds: [10, 20, 30] };
 let lineChart = null;
 let dowChart = null;
 let medianMode = false;
+let logExpanded = false;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -172,7 +173,7 @@ function renderPrimaryStats() {
   const avgVal = medianMode ? computeMedian(allTimes) : s.avg;
   document.getElementById('s-avg').textContent = fmtTime(avgVal);
   document.getElementById('s-avg-sub').textContent = `across ${s.total} solve${s.total !== 1 ? 's' : ''}`;
-  document.getElementById('avg-toggle').textContent = medianMode ? 'Median' : 'Mean';
+  document.getElementById('avg-toggle').textContent = medianMode ? 'Median time ⇄' : 'Mean time ⇄';
   document.getElementById('s-std').textContent = fmtTime(s.sd);
   document.getElementById('s-streak').textContent = s.current;
   document.getElementById('s-longest').textContent = s.longest;
@@ -372,25 +373,33 @@ function renderDowTable() {
 function renderLog() {
   const tbody = document.getElementById('log-body');
   const empty = document.getElementById('log-empty');
+  const showMoreBtn = document.getElementById('log-show-more');
   tbody.innerHTML = '';
 
-  if (!solves.length) { empty.classList.remove('hidden'); return; }
+  if (!solves.length) { empty.classList.remove('hidden'); showMoreBtn.classList.add('hidden'); return; }
   empty.classList.add('hidden');
 
   const bestTime = Math.min(...solves.map(s => s.seconds));
-  const recent = [...solves].reverse().slice(0, 60);
+  const all = [...solves].reverse();
+  const visible = logExpanded ? all : all.slice(0, 7);
 
-  recent.forEach(s => {
+  visible.forEach(s => {
     const tr = document.createElement('tr');
     const isBest = s.seconds === bestTime;
     tr.innerHTML = `
       <td>${displayDate(s.date)}</td>
       <td class="td-muted">${DAY_NAMES[dayOf(s.date)]}</td>
       <td class="td-time${isBest ? ' td-best' : ''}">${fmtTime(s.seconds)}${isBest ? ' ★' : ''}</td>
-      <td><button class="delete-btn" data-id="${s.id}">×</button></td>
     `;
     tbody.appendChild(tr);
   });
+
+  if (all.length > 7 && !logExpanded) {
+    showMoreBtn.classList.remove('hidden');
+    showMoreBtn.textContent = `Show more (${all.length - 7} more)`;
+  } else {
+    showMoreBtn.classList.add('hidden');
+  }
 }
 
 function renderEditTable() {
@@ -481,15 +490,11 @@ document.getElementById('entry-form').addEventListener('submit', async e => {
   }
 });
 
-// ── Delete ────────────────────────────────────────────────────────────────────
+// ── Show more ─────────────────────────────────────────────────────────────────
 
-document.getElementById('log-body').addEventListener('click', async e => {
-  const btn = e.target.closest('.delete-btn');
-  if (!btn) return;
-  const id = Number(btn.dataset.id);
-  await deleteSolve(id);
-  solves = solves.filter(s => s.id !== id);
-  renderAll();
+document.getElementById('log-show-more').addEventListener('click', () => {
+  logExpanded = true;
+  renderLog();
 });
 
 // ── PIN auth (write-lock only) ────────────────────────────────────────────────

@@ -374,19 +374,20 @@ body {
 
 .avg-toggle {
   background: none;
-  border: none;
+  border: 1px solid var(--grey-c);
+  border-radius: 3px;
   font-family: var(--font);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--grey-6);
   cursor: pointer;
-  padding: 0;
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  padding: 2px 6px;
 }
-.avg-toggle:hover { color: var(--black); }
+.avg-toggle:hover { color: var(--black); border-color: var(--grey-9); }
+
+.log-show-more { margin-top: 10px; display: block; }
 
 .edit-toggle-row {
   margin-top: 10px;
