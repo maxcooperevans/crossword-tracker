@@ -90,6 +90,15 @@ async function deleteSolve(id) {
   await fetch(`/api/solves/${id}`, { method: 'DELETE' });
 }
 
+async function updateSolve(id, seconds) {
+  const res = await fetch(`/api/solves/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ seconds }),
+  });
+  if (!res.ok) throw new Error('Update failed');
+}
+
 // ── Computations ─────────────────────────────────────────────────────────────
 
 function computeStats() {
@@ -250,9 +259,8 @@ function renderLineChart() {
           ticks: {
             font: { family: 'Times New Roman', size: 11 },
             color: '#666',
-            maxRotation: 0,
-            autoSkip: true,
-            maxTicksLimit: 10,
+            maxRotation: 45,
+            autoSkip: false,
           },
           grid: { display: false },
         },
@@ -372,6 +380,23 @@ function renderLog() {
   });
 }
 
+function renderEditTable() {
+  const section = document.getElementById('edit-section');
+  if (!section || section.classList.contains('hidden')) return;
+  const tbody = document.getElementById('edit-body');
+  tbody.innerHTML = '';
+  [...solves].reverse().forEach(s => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${displayDate(s.date)}</td>
+      <td><input class="edit-time-input" type="text" value="${fmtTime(s.seconds)}" data-id="${s.id}" maxlength="5" /></td>
+      <td><button class="edit-save-btn" data-id="${s.id}">Save</button></td>
+      <td class="edit-status" data-id="${s.id}"></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
 function renderAll() {
   renderMasthead();
   renderPrimaryStats();
@@ -380,6 +405,7 @@ function renderAll() {
   renderDowChart();
   renderDowTable();
   renderLog();
+  renderEditTable();
 }
 
 // ── Date navigation ───────────────────────────────────────────────────────────
@@ -460,6 +486,7 @@ let unlocked = false;
 function setFormLocked(locked) {
   document.getElementById('entry-section').classList.toggle('hidden', locked);
   document.getElementById('unlock-row').classList.toggle('hidden', !locked);
+  document.getElementById('edit-toggle-row').classList.toggle('hidden', locked);
 }
 
 async function initAuth() {
@@ -500,6 +527,37 @@ async function initAuth() {
     if (e.key === 'Enter') attemptLogin();
   });
 }
+
+// ── Edit entries ─────────────────────────────────────────────────────────────
+
+document.getElementById('edit-toggle-btn').addEventListener('click', () => {
+  const section = document.getElementById('edit-section');
+  const isHidden = section.classList.toggle('hidden');
+  document.getElementById('edit-toggle-btn').textContent = isHidden ? 'Edit entries' : 'Hide editor';
+  if (!isHidden) renderEditTable();
+});
+
+document.getElementById('edit-body').addEventListener('click', async e => {
+  const btn = e.target.closest('.edit-save-btn');
+  if (!btn) return;
+  const id = Number(btn.dataset.id);
+  const input = document.querySelector(`.edit-time-input[data-id="${id}"]`);
+  const status = document.querySelector(`.edit-status[data-id="${id}"]`);
+  const seconds = parseTime(input.value);
+  if (seconds === null) { status.textContent = 'Invalid'; return; }
+  btn.disabled = true;
+  status.textContent = '…';
+  try {
+    await updateSolve(id, seconds);
+    const solve = solves.find(s => s.id === id);
+    if (solve) solve.seconds = seconds;
+    renderAll();
+    status.textContent = '✓';
+  } catch {
+    status.textContent = 'Failed';
+    btn.disabled = false;
+  }
+});
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 

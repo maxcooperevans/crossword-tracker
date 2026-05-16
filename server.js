@@ -134,6 +134,16 @@ app.delete('/api/solves/:id', requireAuth, async (req, res) => {
   res.json({ ok: true });
 });
 
+app.put('/api/solves/:id', requireAuth, async (req, res) => {
+  const id = Number(req.params.id);
+  const { seconds } = req.body;
+  if (typeof seconds !== 'number' || seconds <= 0)
+    return res.status(400).json({ error: 'Invalid time' });
+  const { error } = await supabase.from('solves').update({ seconds }).eq('id', id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
+});
+
 app.post('/api/solves/:id/constructor', async (req, res) => {
   const id = Number(req.params.id);
   const { data: solve, error } = await supabase.from('solves').select('*').eq('id', id).single();

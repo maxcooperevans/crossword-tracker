@@ -58,6 +58,22 @@
     <p id="pin-error"></p>
   </div>
 
+  <!-- Edit toggle (visible when unlocked) -->
+  <div id="edit-toggle-row" class="edit-toggle-row hidden">
+    <button class="text-btn" id="edit-toggle-btn">Edit entries</button>
+  </div>
+
+  <!-- Edit section -->
+  <section class="section hidden" id="edit-section">
+    <h2 class="section-heading">Edit Entries</h2>
+    <table class="data-table">
+      <thead>
+        <tr><th>Date</th><th>Time</th><th></th><th></th></tr>
+      </thead>
+      <tbody id="edit-body"></tbody>
+    </table>
+  </section>
+
   <!-- Primary stats -->
   <section class="section">
     <h2 class="section-heading">Personal Record</h2>
