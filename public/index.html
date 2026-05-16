@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini Times</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="page">
+
+  <!-- Masthead -->
+  <header class="masthead">
+    <div class="rule rule--thick"></div>
+    <div class="masthead-inner">
+      <h1 class="masthead-title">Mini Times</h1>
+      <div class="masthead-meta" id="masthead-right">— solves</div>
+    </div>
+    <div class="rule rule--thin"></div>
+    <p class="masthead-sub">Personal Crossword Record &middot; NYT Mini Edition</p>
+    <div class="rule rule--thick"></div>
+  </header>
+
+  <!-- Entry -->
+  <section class="section entry-section hidden" id="entry-section">
+    <form id="entry-form">
+      <div class="entry-row">
+        <div class="time-field">
+          <label class="field-label">Time</label>
+          <input id="time-input" type="text" placeholder="0:00" maxlength="5" autocomplete="off" spellcheck="false" />
+        </div>
+        <div class="date-field">
+          <label class="field-label">Date</label>
+          <div class="date-nav">
+            <button type="button" id="date-prev" aria-label="Previous day">&#8592;</button>
+            <input id="date-input" type="date" />
+            <button type="button" id="date-next" aria-label="Next day">&#8594;</button>
+          </div>
+        </div>
+        <div class="submit-field">
+          <label class="field-label">&nbsp;</label>
+          <button type="submit" id="submit-btn">Record</button>
+        </div>
+      </div>
+      <p class="entry-status" id="entry-status"></p>
+    </form>
+  </section>
+
+  <!-- PIN unlock (shown when entry is locked) -->
+  <div id="unlock-row" class="unlock-row">
+    <span class="lock-msg">Locked &mdash;</span>
+    <button class="text-btn" id="unlock-btn">Enter PIN to record</button>
+  </div>
+  <div id="pin-inline" class="pin-inline hidden">
+    <input id="pin-input" type="password" maxlength="16" placeholder="PIN" autocomplete="current-password" />
+    <button id="pin-submit">Unlock</button>
+    <p id="pin-error"></p>
+  </div>
+
+  <!-- Primary stats -->
+  <section class="section">
+    <h2 class="section-heading">Personal Record</h2>
+    <div class="stats-grid stats-grid--4">
+      <div class="stat">
+        <div class="stat-label">Best Time</div>
+        <div class="stat-value" id="s-best">—</div>
+        <div class="stat-sub" id="s-best-date"></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Worst Time</div>
+        <div class="stat-value" id="s-worst">—</div>
+        <div class="stat-sub" id="s-worst-date"></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Average</div>
+        <div class="stat-value" id="s-avg">—</div>
+        <div class="stat-sub" id="s-avg-sub"></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Std. Deviation</div>
+        <div class="stat-value" id="s-std">—</div>
+        <div class="stat-sub">consistency</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Streak & volume -->
+  <section class="section">
+    <h2 class="section-heading">Streaks &amp; Volume</h2>
+    <div class="stats-grid stats-grid--4">
+      <div class="stat">
+        <div class="stat-label">Current Streak</div>
+        <div class="stat-value" id="s-streak">—</div>
+        <div class="stat-sub">days</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Longest Streak</div>
+        <div class="stat-value" id="s-longest">—</div>
+        <div class="stat-sub">days</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Total Solves</div>
+        <div class="stat-value" id="s-total">0</div>
+        <div class="stat-sub" id="s-total-sub"></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Floor Estimate</div>
+        <div class="stat-value" id="s-floor">—</div>
+        <div class="stat-sub">avg of 5 best</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sub-threshold counts -->
+  <section class="section">
+    <h2 class="section-heading">Sub-Threshold Counts</h2>
+    <div class="stats-grid stats-grid--3" id="threshold-stats"></div>
+  </section>
+
+  <!-- Line chart -->
+  <section class="section" id="line-section">
+    <h2 class="section-heading">Last 30 Solves</h2>
+    <p class="chart-legend"><span class="legend-solid">&#9644;</span> Solve time &nbsp; <span class="legend-dashed">&#9644;</span> 7-solve rolling average</p>
+    <div class="chart-wrap">
+      <canvas id="line-chart"></canvas>
+    </div>
+  </section>
+
+  <!-- Day-of-week chart -->
+  <section class="section" id="dow-section">
+    <h2 class="section-heading">Average by Day of Week</h2>
+    <div class="chart-wrap chart-wrap--short">
+      <canvas id="dow-chart"></canvas>
+    </div>
+  </section>
+
+  <!-- DOW best/worst table -->
+  <section class="section" id="dow-table-section">
+    <h2 class="section-heading">Best &amp; Worst by Day</h2>
+    <table class="data-table" id="dow-table">
+      <thead>
+        <tr>
+          <th>Day</th>
+          <th>Avg</th>
+          <th>Best</th>
+          <th>Worst</th>
+          <th>Solves</th>
+        </tr>
+      </thead>
+      <tbody id="dow-table-body"></tbody>
+    </table>
+  </section>
+
+  <!-- Recent solves -->
+  <section class="section">
+    <h2 class="section-heading">Solve Log</h2>
+    <table class="data-table" id="log-table">
+      <thead>
+        <tr><th>Date</th><th>Day</th><th>Time</th><th></th></tr>
+      </thead>
+      <tbody id="log-body"></tbody>
+    </table>
+    <p class="table-empty" id="log-empty">No solves yet. Record your first time above.</p>
+  </section>
+
+  <footer class="footer">
+    <div class="rule rule--thin"></div>
+    <p>All times in mm:ss &middot; Data stored locally</p>
+  </footer>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+@echo off
+echo Starting NYT Mini Crossword Tracker...
+"C:\Program Files\nodejs\node.exe" "%~dp0server.js"
