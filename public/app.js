@@ -6,6 +6,7 @@ let solves = [];
 let config = { thresholds: [10, 20, 30] };
 let lineChart = null;
 let dowChart = null;
+let medianMode = false;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -47,6 +48,15 @@ function shiftDate(dateStr, delta) {
   const d = localDate(dateStr);
   d.setDate(d.getDate() + delta);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function computeMedian(arr) {
+  if (!arr.length) return null;
+  const sorted = [...arr].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? Math.round((sorted[mid - 1] + sorted[mid]) / 2)
+    : sorted[mid];
 }
 
 function stdDev(arr) {
@@ -158,8 +168,11 @@ function renderPrimaryStats() {
   document.getElementById('s-best-date').textContent = s.bestEntry ? displayDate(s.bestEntry.date) : '';
   document.getElementById('s-worst').textContent = fmtTime(s.worst);
   document.getElementById('s-worst-date').textContent = s.worstEntry ? displayDate(s.worstEntry.date) : '';
-  document.getElementById('s-avg').textContent = fmtTime(s.avg);
+  const allTimes = solves.map(sv => sv.seconds);
+  const avgVal = medianMode ? computeMedian(allTimes) : s.avg;
+  document.getElementById('s-avg').textContent = fmtTime(avgVal);
   document.getElementById('s-avg-sub').textContent = `across ${s.total} solve${s.total !== 1 ? 's' : ''}`;
+  document.getElementById('avg-toggle').textContent = medianMode ? 'Median' : 'Mean';
   document.getElementById('s-std').textContent = fmtTime(s.sd);
   document.getElementById('s-streak').textContent = s.current;
   document.getElementById('s-longest').textContent = s.longest;
@@ -527,6 +540,13 @@ async function initAuth() {
     if (e.key === 'Enter') attemptLogin();
   });
 }
+
+// ── Mean / Median toggle ──────────────────────────────────────────────────────
+
+document.getElementById('avg-toggle').addEventListener('click', () => {
+  medianMode = !medianMode;
+  renderPrimaryStats();
+});
 
 // ── Edit entries ─────────────────────────────────────────────────────────────
 

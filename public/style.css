@@ -41,6 +41,18 @@ body {
   justify-content: space-between;
   padding: 10px 0;
 }
+.masthead-home {
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--grey-6);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.12s;
+}
+.masthead-home:hover { color: var(--black); }
 .masthead-title {
   font-size: clamp(28px, 6vw, 52px);
   font-weight: 700;
@@ -359,6 +371,22 @@ body {
   transition: color 0.12s;
 }
 .delete-btn:hover { color: var(--black); }
+
+.avg-toggle {
+  background: none;
+  border: none;
+  font-family: var(--font);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--grey-6);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.avg-toggle:hover { color: var(--black); }
 
 .edit-toggle-row {
   margin-top: 10px;
